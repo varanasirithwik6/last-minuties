@@ -308,6 +308,13 @@ p {
   border-radius: var(--radius-lg);
 }
 
+.btn-xs {
+  padding: 4px var(--space-3);
+  font-size: var(--text-xs);
+  border-radius: var(--radius-md);
+  min-height: unset;
+}
+
 .btn-lg {
   padding: var(--space-4) var(--space-8);
   font-size: var(--text-lg);

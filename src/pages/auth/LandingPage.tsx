@@ -1,7 +1,15 @@
 import { useNavigate } from 'react-router-dom';
-import { Ticket, Clock, Shield, ArrowRight, Star } from 'lucide-react';
+import { Ticket, Clock, Shield, ArrowRight, Star, Zap } from 'lucide-react';
 import { DEMO_LISTINGS } from '../../lib/demoData';
 import TicketCard from '../../components/tickets/TicketCard';
+
+const FLOW_STEPS = [
+  { emoji: '😬', label: 'Plans changed', sub: 'Can\'t make the show' },
+  { emoji: '📸', label: 'List in 60s', sub: 'AI scans your ticket' },
+  { emoji: '🔍', label: 'Buyer finds it', sub: 'Smart discovery' },
+  { emoji: '💬', label: 'Connect', sub: 'Private in-app chat' },
+  { emoji: '🤝', label: 'Exchange', sub: 'Directly between you' },
+];
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -19,7 +27,24 @@ export default function LandingPage() {
       {/* Content */}
       <div style={{ position: 'relative', zIndex: 1, maxWidth: '480px', margin: '0 auto', padding: '0 var(--space-5)' }}>
         {/* Header */}
-        <div style={{ paddingTop: 'max(var(--space-12), env(safe-area-inset-top) + 24px)', marginBottom: 'var(--space-8)' }}>
+        <div style={{ paddingTop: 'max(var(--space-10), env(safe-area-inset-top) + 24px)', marginBottom: 'var(--space-6)' }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'rgba(249, 115, 22, 0.12)',
+              border: '1px solid rgba(249, 115, 22, 0.25)',
+              borderRadius: 'var(--radius-full)',
+              padding: '4px 14px',
+              marginBottom: 'var(--space-4)',
+            }}
+          >
+            <Zap size={12} fill="currentColor" style={{ color: 'var(--color-brand-primary)' }} />
+            <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--color-brand-primary)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              College Ticket Exchange
+            </span>
+          </div>
           <div
             style={{
               fontFamily: 'var(--font-display)',
@@ -30,13 +55,13 @@ export default function LandingPage() {
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
               letterSpacing: '-0.03em',
-              marginBottom: 'var(--space-2)',
+              marginBottom: 'var(--space-1)',
             }}
           >
             Last Minuties
           </div>
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-tertiary)' }}>
-            Plans changed. Tickets don't have to.
+            Plans changed. Tickets don't have to go to waste.
           </p>
         </div>
 
@@ -68,32 +93,80 @@ export default function LandingPage() {
           </h1>
           <p
             style={{
-              fontSize: 'var(--text-lg)',
+              fontSize: 'var(--text-base)',
               color: 'var(--color-text-secondary)',
               marginBottom: 'var(--space-6)',
               lineHeight: 'var(--leading-relaxed)',
             }}
           >
-            Connect with college students looking for last-minute movie tickets — instantly.
+            Connect with college students who have spare tickets — or need one — right now.
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
             <button
-              id="landing-get-started"
+              id="landing-find-ticket"
               className="btn btn-primary btn-lg btn-full"
               onClick={() => navigate('/auth')}
             >
-              Get Started
               <ArrowRight size={20} />
+              Find a Ticket Now
             </button>
             <button
-              id="landing-see-tickets"
+              id="landing-list-ticket"
               className="btn btn-secondary btn-lg btn-full"
               onClick={() => navigate('/auth')}
             >
               <Ticket size={20} />
-              Browse Tickets
+              List Your Spare Ticket
             </button>
+          </div>
+        </div>
+
+        {/* HOW IT WORKS flow */}
+        <div style={{ marginBottom: 'var(--space-8)' }}>
+          <div className="section-title" style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--text-base)' }}>
+            ⚡ How it works
+          </div>
+          <div
+            style={{
+              background: 'rgba(249, 115, 22, 0.04)',
+              border: '1px solid rgba(249, 115, 22, 0.12)',
+              borderRadius: 'var(--radius-xl)',
+              padding: 'var(--space-5)',
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+              {FLOW_STEPS.map((step, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                  <div
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: 'var(--radius-lg)',
+                      background: 'rgba(249, 115, 22, 0.1)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '1.2rem',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {step.emoji}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                      {step.label}
+                    </div>
+                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>
+                      {step.sub}
+                    </div>
+                  </div>
+                  {i < FLOW_STEPS.length - 1 && (
+                    <ArrowRight size={14} style={{ color: 'var(--color-text-tertiary)', opacity: 0.5, marginLeft: 'auto' }} />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -147,8 +220,8 @@ export default function LandingPage() {
 
         {/* Sample tickets */}
         <div style={{ marginBottom: 'var(--space-6)' }}>
-          <div className="section-title">
-            <span>🔥</span> Happening Right Now
+          <div className="section-title" style={{ marginBottom: 'var(--space-3)', fontSize: 'var(--text-base)' }}>
+            🔥 Happening Right Now
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
             {sampleListings.map((l) => (
@@ -186,18 +259,41 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Disclaimer */}
+        {/* Platform boundary disclaimer */}
         <div
           style={{
-            textAlign: 'center',
-            fontSize: 'var(--text-xs)',
-            color: 'var(--color-text-tertiary)',
-            paddingBottom: 'max(var(--space-8), env(safe-area-inset-bottom) + 24px)',
-            lineHeight: 1.6,
+            background: 'rgba(6, 182, 212, 0.06)',
+            border: '1px solid rgba(6, 182, 212, 0.15)',
+            borderRadius: 'var(--radius-lg)',
+            padding: 'var(--space-4)',
+            marginBottom: 'var(--space-6)',
           }}
         >
-          Last Minuties connects buyers and sellers — we don't sell, buy, or process payments.
-          All transactions happen directly between students.
+          <div style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--color-info)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            ℹ️ About Last Minuties
+          </div>
+          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
+            We're a <strong style={{ color: 'var(--color-text-primary)' }}>connector, not a seller</strong>.
+            Last Minuties helps buyers and sellers find each other.
+            All payments and ticket transfers happen <strong style={{ color: 'var(--color-text-primary)' }}>directly between students</strong>.
+            We do not process payments, hold money, or guarantee transactions.
+          </div>
+        </div>
+
+        {/* Bottom CTA */}
+        <div style={{ textAlign: 'center', paddingBottom: 'max(var(--space-10), env(safe-area-inset-bottom) + 32px)' }}>
+          <button
+            id="landing-get-started-bottom"
+            className="btn btn-primary btn-full"
+            onClick={() => navigate('/auth')}
+            style={{ marginBottom: 'var(--space-3)' }}
+          >
+            Get Started — It's Free
+            <ArrowRight size={18} />
+          </button>
+          <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>
+            Verified college students only • Phone OTP login
+          </p>
         </div>
       </div>
     </div>
