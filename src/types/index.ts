@@ -6,6 +6,8 @@ export type UrgencyLevel = 'available' | 'soon' | 'hot' | 'urgent';
 export type ListingStatus = 'available' | 'contacted' | 'sold' | 'expired' | 'cancelled';
 export type ConnectionStatus = 'pending' | 'accepted' | 'declined' | 'cancelled' | 'completed';
 export type VerificationStatus = 'verified' | 'pending' | 'none';
+export type AccountStatus = 'ACTIVE' | 'SUSPENDED' | 'DEACTIVATED';
+
 export type NotificationType =
   | 'match_found'
   | 'contact_request'
@@ -35,6 +37,7 @@ export interface User {
   rating: number;
   ratingCount: number;
   connectionCount: number;
+  accountStatus?: AccountStatus;
   joinedAt: string; // ISO
 }
 
@@ -72,6 +75,7 @@ export interface SellerInfo {
   rating: number;
   ratingCount: number;
   connectionCount: number;
+  accountStatus?: AccountStatus;
 }
 
 // ============================================================
@@ -146,7 +150,7 @@ export interface MatchPreference {
 }
 
 // ============================================================
-// Rating
+// Rating & Reputation
 // ============================================================
 export interface Rating {
   id: string;
@@ -155,6 +159,42 @@ export interface Rating {
   toUserId: string;
   rating: number; // 1–5
   comment?: string;
+  createdAt: string;
+}
+
+// ============================================================
+// Reports & Safety
+// ============================================================
+export type ReportReason =
+  | 'suspicious_behavior'
+  | 'fake_ticket'
+  | 'misleading_price'
+  | 'duplicate_listing'
+  | 'harassment_or_spam'
+  | 'no_show'
+  | 'inappropriate_message'
+  | 'other';
+
+export type ReportStatus = 'PENDING' | 'REVIEWED' | 'RESOLVED' | 'DISMISSED';
+
+export interface Report {
+  id: string;
+  reporterId: string;
+  reportedUserId?: string;
+  listingId?: string;
+  messageId?: string;
+  connectionId?: string;
+  reason: ReportReason | string;
+  description?: string;
+  status: ReportStatus;
+  createdAt: string;
+  reviewedAt?: string;
+}
+
+export interface Block {
+  id: string;
+  blockerId: string;
+  blockedId: string;
   createdAt: string;
 }
 
@@ -183,9 +223,9 @@ export interface ConnectionRequest {
   listingId: string;
   listing?: Pick<Listing, 'id' | 'movie' | 'theatre' | 'date' | 'showTime' | 'askingPrice' | 'originalPrice' | 'seats' | 'status' | 'expiresAt'>;
   buyerId: string;
-  buyer?: Pick<User, 'id' | 'name' | 'college' | 'profileImage' | 'phoneVerified' | 'collegeVerified'>;
+  buyer?: Pick<User, 'id' | 'name' | 'college' | 'profileImage' | 'phoneVerified' | 'collegeVerified' | 'rating' | 'ratingCount' | 'connectionCount'>;
   sellerId: string;
-  seller?: Pick<User, 'id' | 'name' | 'college' | 'profileImage' | 'phoneVerified' | 'collegeVerified'>;
+  seller?: Pick<User, 'id' | 'name' | 'college' | 'profileImage' | 'phoneVerified' | 'collegeVerified' | 'rating' | 'ratingCount' | 'connectionCount'>;
   status: ConnectionStatus;
   initialMessage?: string;
   createdAt: string;

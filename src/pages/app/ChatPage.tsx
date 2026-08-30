@@ -17,14 +17,20 @@ import {
   Check,
   Ban,
   Trash2,
+  Flag,
+  Star,
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useChatStore } from '../../stores/chatStore';
 import { useListingsStore } from '../../stores/listingsStore';
 import { useConnectionStore } from '../../stores/connectionStore';
+import { useSafetyStore } from '../../stores/safetyStore';
 import { DEMO_LISTINGS } from '../../lib/demoData';
 import { scanForPII } from '../../lib/crypto';
 import UserAvatar from '../../components/common/UserAvatar';
+import SafetyBanner from '../../components/safety/SafetyBanner';
+import RatingModal from '../../components/safety/RatingModal';
+import ReportModal from '../../components/safety/ReportModal';
 import type { Message } from '../../types';
 
 function formatMsgTime(iso: string) {
@@ -59,11 +65,19 @@ export default function ChatPage() {
     clearChatHistory,
   } = useChatStore();
 
+  const { blockUser: blockUserStore } = useSafetyStore();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [showSecurityModal, setShowSecurityModal] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [showOfferModal, setShowOfferModal] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{
+    type: 'user' | 'message';
+    messageId?: string;
+    messageText?: string;
+  }>({ type: 'user' });
   const [offerPriceInput, setOfferPriceInput] = useState('');
   const [isTicketSummaryExpanded, setIsTicketSummaryExpanded] = useState(true);
   const [securityFingerprint, setSecurityFingerprint] = useState('Loading...');
@@ -196,9 +210,10 @@ export default function ChatPage() {
     await respondToDealOffer(connectionId, messageId, user.id, false);
   };
 
-  const handleBlockAndExit = () => {
-    if (!connectionId) return;
-    if (confirm('Are you sure you want to block this user and end the encrypted channel?')) {
+  const handleBlockAndExit = async () => {
+    if (!connectionId || !otherUser?.id || !user?.id) return;
+    if (confirm(`Are you sure you want to block ${otherUser.name || 'this user'}? You will no longer receive requests or messages from them.`)) {
+      await blockUserStore(user.id, otherUser.id);
       blockUser(connectionId);
       navigate('/activity');
     }
@@ -211,6 +226,21 @@ export default function ChatPage() {
       setMessages([]);
       setShowOptionsMenu(false);
     }
+  };
+
+  const handleReportUser = () => {
+    setShowOptionsMenu(false);
+    setReportTarget({ type: 'user' });
+    setShowReportModal(true);
+  };
+
+  const handleReportMessage = (msg: Message) => {
+    setReportTarget({
+      type: 'message',
+      messageId: msg.id,
+      messageText: msg.message,
+    });
+    setShowReportModal(true);
   };
 
   const peerIsTyping = connectionId ? isTyping[connectionId] : false;
@@ -286,6 +316,15 @@ export default function ChatPage() {
                   className="chat-dropdown-item"
                   onClick={() => {
                     setShowOptionsMenu(false);
+                    setShowRatingModal(true);
+                  }}
+                >
+                  <Star size={14} style={{ color: 'var(--color-warning)' }} /> Rate User
+                </button>
+                <button
+                  className="chat-dropdown-item"
+                  onClick={() => {
+                    setShowOptionsMenu(false);
                     setShowSecurityModal(true);
                   }}
                 >
@@ -298,10 +337,17 @@ export default function ChatPage() {
                   <Trash2 size={14} /> Clear Local Messages
                 </button>
                 <button
+                  className="chat-dropdown-item"
+                  onClick={handleReportUser}
+                  style={{ color: 'var(--color-error)' }}
+                >
+                  <Flag size={14} /> Report User
+                </button>
+                <button
                   className="chat-dropdown-item chat-dropdown-item-danger"
                   onClick={handleBlockAndExit}
                 >
-                  <Ban size={14} /> Block & Report
+                  <Ban size={14} /> Block User
                 </button>
               </div>
             )}
@@ -309,14 +355,9 @@ export default function ChatPage() {
         </div>
       </header>
 
-      {/* ── PRIVACY BANNER NOTICE ── */}
-      <div className="chat-privacy-banner">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Shield size={14} style={{ color: 'var(--color-brand-primary)', flexShrink: 0 }} />
-          <span>
-            <strong>Zero-Knowledge Privacy Active:</strong> Your phone number is masked. Coordinate all meetup & transfer details right here.
-          </span>
-        </div>
+      {/* ── PRIVACY & SAFETY BANNER ── */}
+      <div style={{ padding: '0 var(--space-3) var(--space-2)' }}>
+        <SafetyBanner compact style={{ marginTop: 'var(--space-2)' }} />
       </div>
 
       {/* ── TICKET CONTEXT SUMMARY ACCORDION ── */}
@@ -459,12 +500,24 @@ export default function ChatPage() {
                 {!msg.dealOffer && <div className="chat-bubble-text">{msg.message}</div>}
 
                 {/* Bubble Footer */}
-                <div className="chat-bubble-meta">
-                  <span title="AES-GCM-256 Verified">
-                    <Lock size={9} style={{ opacity: 0.7 }} />
-                  </span>
-                  <span>{formatMsgTime(msg.createdAt)}</span>
-                  {isMe && <span className="chat-checkmarks">✓✓</span>}
+                <div className="chat-bubble-meta" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span title="AES-GCM-256 Verified">
+                      <Lock size={9} style={{ opacity: 0.7 }} />
+                    </span>
+                    <span>{formatMsgTime(msg.createdAt)}</span>
+                    {isMe && <span className="chat-checkmarks">✓✓</span>}
+                  </div>
+                  {!isMe && !isSystem && (
+                    <button
+                      type="button"
+                      onClick={() => handleReportMessage(msg)}
+                      title="Report inappropriate message"
+                      style={{ background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', padding: '0 2px', display: 'inline-flex', opacity: 0.6 }}
+                    >
+                      <Flag size={10} />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -756,6 +809,32 @@ export default function ChatPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* ── RATING MODAL ── */}
+      {connectionId && otherUser && user && (
+        <RatingModal
+          connectionId={connectionId}
+          toUserId={otherUser.id || ''}
+          toUserName={otherUser.name || 'Student'}
+          fromUserId={user.id}
+          isOpen={showRatingModal}
+          onClose={() => setShowRatingModal(false)}
+        />
+      )}
+
+      {/* ── REPORT MODAL ── */}
+      {user && (
+        <ReportModal
+          reporterId={user.id}
+          targetType={reportTarget.type}
+          reportedUserId={otherUser?.id}
+          reportedUserName={otherUser?.name}
+          connectionId={connectionId}
+          messageId={reportTarget.messageId}
+          isOpen={showReportModal}
+          onClose={() => setShowReportModal(false)}
+        />
       )}
     </div>
   );

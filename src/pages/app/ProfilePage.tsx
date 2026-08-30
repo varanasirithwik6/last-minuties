@@ -7,12 +7,14 @@ import {
 import { useAuthStore } from '../../stores/authStore';
 import { useListingsStore } from '../../stores/listingsStore';
 import UserAvatar from '../../components/common/UserAvatar';
+import PrivacyCenterModal from '../../components/safety/PrivacyCenterModal';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { user, signOut } = useAuthStore();
   const { myListings } = useListingsStore();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   if (!user) return null;
 
@@ -24,20 +26,30 @@ export default function ProfilePage() {
     navigate('/', { replace: true });
   };
 
+  const handleMenuClick = (label: string) => {
+    if (label === 'Privacy Settings') {
+      setShowPrivacyModal(true);
+    } else if (label === 'How It Works') {
+      navigate('/landing');
+    } else if (label === 'Settings') {
+      setShowPrivacyModal(true);
+    }
+  };
+
   const menuItems = [
     {
-      section: 'Account',
+      section: 'Account & Trust',
       items: [
-        { icon: Shield, label: 'College Verification', description: user.collegeVerified ? 'Verified' : 'Pending', to: null },
-        { icon: Bell, label: 'Notification Preferences', to: null },
-        { icon: Eye, label: 'Privacy Settings', to: null },
+        { icon: Shield, label: 'College Verification', description: user.collegeVerified ? 'Verified Campus Student' : 'Verification Pending' },
+        { icon: Eye, label: 'Privacy Settings', description: 'Phone protection, data visibility & deletion' },
+        { icon: Bell, label: 'Notification Preferences', description: 'In-app real-time alerts' },
       ],
     },
     {
-      section: 'Support',
+      section: 'Safety & Support',
       items: [
-        { icon: HelpCircle, label: 'How It Works', to: null },
-        { icon: Settings, label: 'Settings', to: null },
+        { icon: HelpCircle, label: 'How It Works', description: 'Campus rules, fair pricing & safety' },
+        { icon: Settings, label: 'Settings', description: 'Account options' },
       ],
     },
   ];
@@ -103,8 +115,8 @@ export default function ProfilePage() {
           }}
         >
           {[
-            { label: 'Rating', value: user.ratingCount > 0 ? `⭐ ${user.rating.toFixed(1)}` : '—' },
-            { label: 'Connections', value: user.connectionCount },
+            { label: 'Rating', value: user.ratingCount > 0 ? `⭐ ${user.rating.toFixed(1)}` : 'New' },
+            { label: 'Connections', value: user.connectionCount || 0 },
             { label: 'Listed', value: myListings.length },
           ].map(({ label, value }) => (
             <div key={label} style={{ textAlign: 'center' }}>
@@ -145,10 +157,10 @@ export default function ProfilePage() {
         </button>
       </div>
 
-      {/* Ratings */}
+      {/* Ratings detail */}
       {user.ratingCount > 0 && (
         <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
-          <h3 style={{ fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-3)' }}>Rating</h3>
+          <h3 style={{ fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-3)' }}>Reputation & Feedback</h3>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-4xl)', fontWeight: 900, color: 'var(--color-text-primary)' }}>
@@ -165,7 +177,7 @@ export default function ProfilePage() {
                 ))}
               </div>
               <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', marginTop: '4px' }}>
-                {user.ratingCount} ratings
+                {user.ratingCount} peer ratings
               </div>
             </div>
           </div>
@@ -189,6 +201,7 @@ export default function ProfilePage() {
                   borderBottom: i < items.length - 1 ? '1px solid var(--color-border-subtle)' : 'none',
                   cursor: 'pointer', transition: 'background var(--transition-fast)', textAlign: 'left',
                 }}
+                onClick={() => handleMenuClick(label)}
                 onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-surface-glass)'}
                 onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
               >
@@ -247,6 +260,13 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+
+      {/* Privacy Center Modal */}
+      <PrivacyCenterModal
+        isOpen={showPrivacyModal}
+        onClose={() => setShowPrivacyModal(false)}
+        userId={user.id}
+      />
 
       <div style={{ height: 'var(--space-8)' }} />
     </div>

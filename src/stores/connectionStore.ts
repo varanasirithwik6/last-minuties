@@ -30,6 +30,9 @@ const DEMO_REQUESTS: ConnectionRequest[] = [
       college: 'IIT Madras',
       phoneVerified: true,
       collegeVerified: true,
+      rating: 4.9,
+      ratingCount: 14,
+      connectionCount: 14,
     },
     sellerId: 'demo-user',
     seller: {
@@ -38,6 +41,9 @@ const DEMO_REQUESTS: ConnectionRequest[] = [
       college: 'SRM University',
       phoneVerified: true,
       collegeVerified: true,
+      rating: 4.8,
+      ratingCount: 12,
+      connectionCount: 12,
     },
     status: 'pending',
     createdAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
@@ -87,6 +93,9 @@ function mapDbToConnectionRequest(row: any): ConnectionRequest {
           profileImage: buyer.profile_image || buyer.profileImage,
           phoneVerified: buyer.phone_verified ?? buyer.phoneVerified ?? false,
           collegeVerified: buyer.college_verified ?? buyer.collegeVerified ?? false,
+          rating: Number(buyer.rating || 0),
+          ratingCount: Number(buyer.rating_count || buyer.ratingCount || 0),
+          connectionCount: Number(buyer.connection_count || buyer.connectionCount || 0),
         }
       : undefined,
     seller: seller
@@ -97,6 +106,9 @@ function mapDbToConnectionRequest(row: any): ConnectionRequest {
           profileImage: seller.profile_image || seller.profileImage,
           phoneVerified: seller.phone_verified ?? seller.phoneVerified ?? false,
           collegeVerified: seller.college_verified ?? seller.collegeVerified ?? false,
+          rating: Number(seller.rating || 0),
+          ratingCount: Number(seller.rating_count || seller.ratingCount || 0),
+          connectionCount: Number(seller.connection_count || seller.connectionCount || 0),
         }
       : undefined,
   };

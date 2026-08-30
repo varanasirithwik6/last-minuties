@@ -113,9 +113,18 @@ function RequestCard({
                     ✓ Phone
                   </span>
                 )}
-                {peer.collegeVerified && (
+                {peer.collegeVerified ? (
                   <span className="badge badge-verified" style={{ fontSize: '10px', padding: '1px 6px' }}>
                     ✓ College
+                  </span>
+                ) : null}
+                {peer.ratingCount && peer.ratingCount > 0 ? (
+                  <span className="badge badge-verified" style={{ fontSize: '10px', padding: '1px 6px' }}>
+                    ⭐ {peer.rating.toFixed(1)}
+                  </span>
+                ) : (
+                  <span className="badge badge-soon" style={{ fontSize: '10px', padding: '1px 6px' }}>
+                    New member
                   </span>
                 )}
               </div>

@@ -14,6 +14,7 @@ import {
   Clock3,
   Ban,
   Send,
+  Flag,
 } from 'lucide-react';
 import { useListingsStore } from '../../stores/listingsStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -22,6 +23,8 @@ import { DEMO_USER } from '../../lib/demoData';
 import { formatTimeRemaining, getMinutesUntilShow, getUrgencyClass } from '../../lib/urgency';
 import type { Listing } from '../../types';
 import UserAvatar from '../../components/common/UserAvatar';
+import SafetyBanner from '../../components/safety/SafetyBanner';
+import ReportModal from '../../components/safety/ReportModal';
 
 export default function TicketDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -40,6 +43,7 @@ export default function TicketDetailPage() {
   const [contactLoading, setContactLoading] = useState(false);
   const [contactError, setContactError] = useState('');
   const [showRequestModal, setShowRequestModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const [initialMessage, setInitialMessage] = useState('');
 
   const currentUser = user || (DEMO_USER as any);
@@ -149,7 +153,6 @@ export default function TicketDetailPage() {
     if (result.error) {
       setContactError(result.error);
     } else {
-      // Refresh connections
       await fetchMyConnections(currentUser.id);
     }
   };
@@ -333,6 +336,17 @@ export default function TicketDetailPage() {
           <button className="icon-btn" onClick={handleShare} aria-label="Share ticket">
             <Share2 size={18} />
           </button>
+          {!isOwn && (
+            <button
+              id="report-ticket-btn"
+              className="icon-btn"
+              onClick={() => setShowReportModal(true)}
+              title="Report this listing"
+              style={{ color: 'var(--color-text-tertiary)' }}
+            >
+              <Flag size={18} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -459,18 +473,21 @@ export default function TicketDetailPage() {
         </div>
       </div>
 
-      {/* ── SELLER PROFILE CARD ── */}
+      {/* ── SELLER TRUST CARD ── */}
       <div className="card" style={{ marginBottom: 'var(--space-4)', border: '1px solid var(--color-border)' }}>
-        <h3 style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-3)' }}>
-          Listed By Verified Student
-        </h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+          <h3 style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
+            🛡️ Seller Trust Profile
+          </h3>
+          <span className="badge badge-soon" style={{ fontSize: '10px' }}>Campus Member</span>
+        </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
           <UserAvatar user={seller as any} size="lg" />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ fontWeight: 700, fontSize: 'var(--text-base)', color: 'var(--color-text-primary)' }}>
-                {isOwn ? 'You' : seller.name}
+                {isOwn ? 'You (Seller)' : seller.name}
               </span>
               {isOwn && <span className="badge badge-soon" style={{ fontSize: '10px' }}>Your Listing</span>}
             </div>
@@ -480,38 +497,69 @@ export default function TicketDetailPage() {
           </div>
         </div>
 
-        {/* Verification Status — NEVER show phone */}
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          <span className="badge badge-verified">
-            <CheckCircle2 size={11} /> Phone Verified
-          </span>
+        {/* Reputation & Badges Metrics */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '8px',
+            background: 'var(--color-surface-2)',
+            borderRadius: 'var(--radius-lg)',
+            padding: '10px 8px',
+            marginBottom: 'var(--space-3)',
+            textAlign: 'center',
+          }}
+        >
+          <div>
+            <div style={{ fontSize: 'var(--text-xs)', fontWeight: 800, color: 'var(--color-text-primary)' }}>
+              {seller.ratingCount > 0 ? `⭐ ${seller.rating.toFixed(1)}` : 'New member'}
+            </div>
+            <div style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>
+              {seller.ratingCount > 0 ? `${seller.ratingCount} ratings` : 'Reputation'}
+            </div>
+          </div>
+
+          <div>
+            <div style={{ fontSize: 'var(--text-xs)', fontWeight: 800, color: 'var(--color-text-primary)' }}>
+              {seller.connectionCount || 0}
+            </div>
+            <div style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>Connections</div>
+          </div>
+
+          <div>
+            <div style={{ fontSize: 'var(--text-xs)', fontWeight: 800, color: 'var(--color-success)' }}>
+              ✓ Verified
+            </div>
+            <div style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>Phone OTP</div>
+          </div>
+        </div>
+
+        {/* Verification Badges */}
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' }}>
+          {seller.phoneVerified && (
+            <span className="badge badge-verified" style={{ fontSize: '10px' }}>
+              <CheckCircle2 size={10} /> Phone Verified
+            </span>
+          )}
           {seller.collegeVerified ? (
-            <span className="badge badge-verified">
-              <CheckCircle2 size={11} /> College Verified
+            <span className="badge badge-verified" style={{ fontSize: '10px' }}>
+              <CheckCircle2 size={10} /> College ID Verified
             </span>
           ) : (
-            <span className="badge badge-pending">
-              ⏳ Verification Pending
+            <span className="badge badge-pending" style={{ fontSize: '10px' }}>
+              ⏳ College ID Pending
             </span>
           )}
         </div>
+
+        {/* Trust disclaimer */}
+        <div style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', lineHeight: 1.4 }}>
+          * Verification and reputation metrics are informational community signals and do not guarantee ticket authenticity.
+        </div>
       </div>
 
-      {/* ── DIRECT TRANSFER NOTICE ── */}
-      <div
-        style={{
-          background: 'rgba(255, 255, 255, 0.04)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-lg)',
-          padding: 'var(--space-3) var(--space-4)',
-          fontSize: 'var(--text-xs)',
-          color: 'var(--color-text-secondary)',
-          lineHeight: 1.45,
-          marginBottom: 'var(--space-5)',
-        }}
-      >
-        ℹ️ <strong>Platform Notice:</strong> Last Minuties only connects students. Payment and ticket transfer happen directly between buyer and seller. We do not process payments or guarantee tickets.
-      </div>
+      {/* ── SAFETY BANNER ── */}
+      <SafetyBanner style={{ marginBottom: 'var(--space-5)' }} />
 
       {/* ── ACTION BUTTONS ── */}
       {renderContactButton()}
@@ -576,6 +624,18 @@ export default function TicketDetailPage() {
           </div>
         </div>
       )}
+
+      {/* ── REPORT MODAL ── */}
+      <ReportModal
+        reporterId={currentUser?.id || ''}
+        targetType="listing"
+        listingId={listing.id}
+        listingTitle={`${listing.movie} (${listing.theatre})`}
+        reportedUserId={seller.id}
+        reportedUserName={seller.name}
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+      />
     </div>
   );
 }
