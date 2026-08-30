@@ -194,8 +194,10 @@ export default function FindPage() {
 
       {/* ── TICKETS FEED ── */}
       {isLoading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-12) 0' }}>
-          <div className="spinner" style={{ width: '32px', height: '32px' }} />
+        <div className="tickets-grid">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="skeleton skeleton-card" style={{ height: '200px' }} />
+          ))}
         </div>
       ) : results.length > 0 ? (
         <div className="tickets-grid">

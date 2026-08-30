@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, CheckCheck, Ticket, MessageCircle, Star, Clock, Target, ArrowRight } from 'lucide-react';
 import { useNotificationStore } from '../../stores/notificationStore';
@@ -148,6 +148,9 @@ function NotifCard({
 export default function NotificationsPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const [
+    isLoading, setIsLoading
+  ] = useState(true);
   const {
     notifications,
     unreadCount,
@@ -159,7 +162,8 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     if (!user?.id) return;
-    fetchNotifications(user.id);
+    setIsLoading(true);
+    fetchNotifications(user.id).finally(() => setIsLoading(false));
     const unsubscribe = subscribeToNotifications(user.id);
     return unsubscribe;
   }, [user?.id, fetchNotifications, subscribeToNotifications]);
@@ -202,7 +206,17 @@ export default function NotificationsPage() {
         )}
       </div>
 
-      {notifications.length === 0 ? (
+      {isLoading ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              className="skeleton"
+              style={{ height: '72px', borderRadius: 'var(--radius-xl)' }}
+            />
+          ))}
+        </div>
+      ) : notifications.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state-icon">🔔</div>
           <h3 className="empty-state-title">No notifications</h3>

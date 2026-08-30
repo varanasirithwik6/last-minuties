@@ -4,6 +4,7 @@ import { useAuthStore } from './stores/authStore';
 import AppShell from './components/layout/AppShell';
 import LoadingScreen from './components/common/LoadingScreen';
 import InstallPrompt from './components/pwa/InstallPrompt';
+import OfflineBanner from './components/common/OfflineBanner';
 
 // Lazy-loaded pages
 const LandingPage = lazy(() => import('./pages/auth/LandingPage'));
@@ -43,6 +44,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <OfflineBanner />
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
           {/* Public routes */}
@@ -60,6 +62,7 @@ export default function App() {
             <Route path="requests" element={<RequestsPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="settings" element={<ProfilePage />} />
+            <Route path="landing" element={<Navigate to="/" replace />} />
             <Route path="ticket/:id" element={<TicketDetailPage />} />
             <Route path="chat/:connectionId" element={<ChatPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
