@@ -1,6 +1,6 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Zap } from 'lucide-react';
+import { Search, Plus, Zap, X } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useListingsStore } from '../../stores/listingsStore';
 import { useMatchPreferenceStore } from '../../stores/matchPreferenceStore';
@@ -22,6 +22,14 @@ export default function HomePage() {
   const { user } = useAuthStore();
   const { listings, isLoading, fetchListings } = useListingsStore();
   const { preferences, fetchPreferences } = useMatchPreferenceStore();
+  const [hideDemoBanner, setHideDemoBanner] = useState(() => {
+    return sessionStorage.getItem('dismiss_demo_banner') === 'true';
+  });
+
+  const handleDismissBanner = () => {
+    setHideDemoBanner(true);
+    sessionStorage.setItem('dismiss_demo_banner', 'true');
+  };
 
   useEffect(() => {
     fetchListings();
@@ -68,7 +76,7 @@ export default function HomePage() {
   return (
     <div className="page">
       {/* Demo mode indicator */}
-      {DEMO_MODE && (
+      {DEMO_MODE && !hideDemoBanner && (
         <div
           style={{
             background: 'rgba(249, 115, 22, 0.08)',
@@ -78,10 +86,30 @@ export default function HomePage() {
             fontSize: 'var(--text-xs)',
             color: 'var(--color-brand-primary)',
             marginBottom: 'var(--space-4)',
-            textAlign: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '8px',
           }}
         >
-          🎭 Demo Mode — showing sample data. Configure Supabase to go live.
+          <span>🎭 Demo Mode — showing sample data. Configure Supabase to go live.</span>
+          <button
+            onClick={handleDismissBanner}
+            style={{
+              color: 'var(--color-brand-primary)',
+              background: 'none',
+              border: 'none',
+              padding: '2px',
+              display: 'flex',
+              alignItems: 'center',
+              cursor: 'pointer',
+              opacity: 0.8,
+            }}
+            title="Dismiss"
+            aria-label="Dismiss banner"
+          >
+            <X size={14} />
+          </button>
         </div>
       )}
 

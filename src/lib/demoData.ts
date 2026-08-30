@@ -411,10 +411,9 @@ export const DEMO_CONNECTIONS: Connection[] = [
 // ============================================================
 export const DEMO_USER = {
   id: 'demo-user',
-  phone: '+91 98765 43210',
+  phone: '',
   name: 'Demo Student',
   college: 'IIT Madras',
-  studentId: 'CS21B001',
   phoneVerified: true,
   collegeVerified: false,
   rating: 4.7,

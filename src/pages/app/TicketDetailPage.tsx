@@ -44,6 +44,10 @@ export default function TicketDetailPage() {
   const [contactError, setContactError] = useState('');
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showSoldModal, setShowSoldModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [copiedToast, setCopiedToast] = useState(false);
   const [initialMessage, setInitialMessage] = useState('');
 
   const currentUser = user || (DEMO_USER as any);
@@ -79,8 +83,14 @@ export default function TicketDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="page" style={{ display: 'flex', justifyContent: 'center', paddingTop: 'var(--space-12)' }}>
-        <div className="spinner" style={{ width: '32px', height: '32px' }} />
+      <div className="page" style={{ maxWidth: '600px', margin: '0 auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
+          <div className="skeleton" style={{ width: '80px', height: '32px', borderRadius: 'var(--radius-lg)' }} />
+          <div className="skeleton" style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-full)' }} />
+        </div>
+        <div className="skeleton" style={{ height: '320px', borderRadius: 'var(--radius-2xl)', marginBottom: 'var(--space-4)' }} />
+        <div className="skeleton" style={{ height: '120px', borderRadius: 'var(--radius-xl)', marginBottom: 'var(--space-4)' }} />
+        <div className="skeleton" style={{ height: '52px', borderRadius: 'var(--radius-xl)' }} />
       </div>
     );
   }
@@ -167,23 +177,28 @@ export default function TicketDetailPage() {
         });
       } catch {}
     } else {
-      await navigator.clipboard.writeText(window.location.href);
-      alert('Link copied to clipboard!');
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        setCopiedToast(true);
+        setTimeout(() => setCopiedToast(false), 2500);
+      } catch {}
     }
   };
 
-  const handleQuickMarkSold = async () => {
-    if (confirm('Mark this ticket as sold? All pending requests will be cancelled.')) {
-      await markSold(listing.id);
-      navigate('/activity');
-    }
+  const handleConfirmSold = async () => {
+    setActionLoading(true);
+    await markSold(listing.id);
+    setActionLoading(false);
+    setShowSoldModal(false);
+    navigate('/activity');
   };
 
-  const handleQuickCancel = async () => {
-    if (confirm('Cancel this ticket listing?')) {
-      await cancelListing(listing.id);
-      navigate('/activity');
-    }
+  const handleConfirmCancel = async () => {
+    setActionLoading(true);
+    await cancelListing(listing.id);
+    setActionLoading(false);
+    setShowCancelModal(false);
+    navigate('/activity');
   };
 
   const seller = listing.seller || {
@@ -214,14 +229,14 @@ export default function TicketDetailPage() {
               <button
                 id="ticket-sold-btn"
                 className="btn btn-primary btn-full"
-                onClick={handleQuickMarkSold}
+                onClick={() => setShowSoldModal(true)}
               >
                 <CheckCircle2 size={16} /> Sold
               </button>
               <button
                 id="ticket-cancel-btn"
                 className="btn btn-danger btn-sm"
-                onClick={handleQuickCancel}
+                onClick={() => setShowCancelModal(true)}
                 title="Cancel Listing"
               >
                 <XCircle size={16} />
@@ -636,6 +651,133 @@ export default function TicketDetailPage() {
         isOpen={showReportModal}
         onClose={() => setShowReportModal(false)}
       />
+
+      {/* ── MARK SOLD CONFIRMATION MODAL ── */}
+      {showSoldModal && (
+        <div className="modal-backdrop" onClick={() => !actionLoading && setShowSoldModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <div style={{ textAlign: 'center', marginBottom: 'var(--space-4)' }}>
+              <div
+                style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: 'var(--radius-full)',
+                  background: 'rgba(34, 197, 94, 0.15)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto var(--space-3)',
+                }}
+              >
+                <CheckCircle2 size={28} style={{ color: 'var(--color-success)' }} />
+              </div>
+              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-bold)', color: 'var(--color-text-primary)', marginBottom: 'var(--space-2)' }}>
+                Mark Ticket as Sold?
+              </h3>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 'var(--leading-relaxed)' }}>
+                This will remove the listing from the marketplace. Any active connection requests will be automatically cancelled.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+              <button
+                type="button"
+                className="btn btn-secondary btn-full"
+                onClick={() => setShowSoldModal(false)}
+                disabled={actionLoading}
+              >
+                Cancel
+              </button>
+              <button
+                id="confirm-sold-btn"
+                type="button"
+                className="btn btn-primary btn-full"
+                onClick={handleConfirmSold}
+                disabled={actionLoading}
+              >
+                {actionLoading ? <span className="spinner" /> : 'Yes, Mark Sold'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── CANCEL LISTING CONFIRMATION MODAL ── */}
+      {showCancelModal && (
+        <div className="modal-backdrop" onClick={() => !actionLoading && setShowCancelModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <div style={{ textAlign: 'center', marginBottom: 'var(--space-4)' }}>
+              <div
+                style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: 'var(--radius-full)',
+                  background: 'rgba(239, 68, 68, 0.15)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto var(--space-3)',
+                }}
+              >
+                <XCircle size={28} style={{ color: 'var(--color-error)' }} />
+              </div>
+              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-bold)', color: 'var(--color-text-primary)', marginBottom: 'var(--space-2)' }}>
+                Cancel Listing?
+              </h3>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 'var(--leading-relaxed)' }}>
+                Are you sure you want to cancel this listing? It will no longer appear in search results.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+              <button
+                type="button"
+                className="btn btn-secondary btn-full"
+                onClick={() => setShowCancelModal(false)}
+                disabled={actionLoading}
+              >
+                Keep Listing
+              </button>
+              <button
+                id="confirm-cancel-btn"
+                type="button"
+                className="btn btn-danger btn-full"
+                onClick={handleConfirmCancel}
+                disabled={actionLoading}
+              >
+                {actionLoading ? <span className="spinner" /> : 'Yes, Cancel Listing'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── COPIED TOAST ── */}
+      {copiedToast && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: 'fixed',
+            bottom: 'calc(var(--nav-height-bottom) + 20px)',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'var(--color-surface-2)',
+            border: '1px solid var(--color-border-accent)',
+            borderRadius: 'var(--radius-full)',
+            padding: '8px 18px',
+            fontSize: 'var(--text-xs)',
+            fontWeight: 600,
+            color: 'var(--color-brand-primary)',
+            boxShadow: 'var(--shadow-xl)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            animation: 'slide-up 0.25s ease',
+          }}
+        >
+          <CheckCircle2 size={14} /> Link copied to clipboard!
+        </div>
+      )}
     </div>
   );
 }

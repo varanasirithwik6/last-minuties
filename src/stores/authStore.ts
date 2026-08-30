@@ -362,7 +362,13 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'lm-auth-v2',
       partialize: (state) => ({
-        user: state.user,
+        user: state.user
+          ? {
+              ...state.user,
+              phone: '',
+              studentId: undefined,
+            }
+          : null,
         isAuthenticated: state.isAuthenticated,
         isNewUser: state.isNewUser,
       }),
