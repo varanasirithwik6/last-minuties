@@ -742,15 +742,25 @@ export default function SellPage() {
             </h2>
 
             {/* Theatre & Showtime */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-4)' }}>
-              <MapPin size={14} style={{ color: 'var(--color-brand-primary)' }} />
-              <span>{formValues.theatre}</span>
+            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-4)' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <MapPin size={14} style={{ color: 'var(--color-brand-primary)' }} />
+                {formValues.theatre}
+              </span>
               <span>•</span>
-              <Calendar size={14} />
-              <span>{formValues.date}</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <Calendar size={14} />
+                {formValues.date === today
+                  ? 'Today'
+                  : formValues.date === (() => { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10); })()
+                  ? 'Tomorrow'
+                  : formValues.date}
+              </span>
               <span>•</span>
-              <Clock size={14} />
-              <span>{formValues.showTime}</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <Clock size={14} />
+                {formValues.showTime}
+              </span>
             </div>
 
             {/* Ticket Seat Info */}

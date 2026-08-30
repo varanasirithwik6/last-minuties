@@ -15,6 +15,7 @@ export default function ProfilePage() {
   const { myListings } = useListingsStore();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showHowItWorksModal, setShowHowItWorksModal] = useState(false);
 
   if (!user) return null;
 
@@ -27,11 +28,13 @@ export default function ProfilePage() {
   };
 
   const handleMenuClick = (label: string) => {
-    if (label === 'Privacy Settings') {
+    if (label === 'Privacy Settings' || label === 'Settings') {
       setShowPrivacyModal(true);
     } else if (label === 'How It Works') {
-      navigate('/landing');
-    } else if (label === 'Settings') {
+      setShowHowItWorksModal(true);
+    } else if (label === 'Notification Preferences') {
+      navigate('/notifications');
+    } else if (label === 'College Verification') {
       setShowPrivacyModal(true);
     }
   };
@@ -267,6 +270,62 @@ export default function ProfilePage() {
         onClose={() => setShowPrivacyModal(false)}
         userId={user.id}
       />
+
+      {/* How It Works Modal */}
+      {showHowItWorksModal && (
+        <div className="modal-backdrop" onClick={() => setShowHowItWorksModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <HelpCircle size={20} style={{ color: 'var(--color-brand-primary)' }} />
+                <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 800 }}>How Last Minuties Works</h3>
+              </div>
+              <button className="icon-btn" onClick={() => setShowHowItWorksModal(false)}>✕</button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginBottom: 'var(--space-5)' }}>
+              {[
+                { emoji: '⚡', title: '1. Plans Changed?', desc: 'A student can\'t make it to their movie and lists their ticket with showtime and price.' },
+                { emoji: '🔍', title: '2. Instant Discovery', desc: 'Other students on campus find tickets filtered by movie, timing, or smart matches.' },
+                { emoji: '💬', title: '3. Direct Connection', desc: 'Buyer sends a request. Once accepted, a private encrypted chat opens.' },
+                { emoji: '🤝', title: '4. Direct Handover', desc: 'Students coordinate ticket handover and payment directly between themselves.' },
+                { emoji: '⭐', title: '5. Build Reputation', desc: 'After transaction, students rate each other to establish campus trust.' },
+              ].map((item, i) => (
+                <div key={i} style={{ display: 'flex', gap: 'var(--space-3)', background: 'var(--color-surface-2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-lg)' }}>
+                  <div style={{ fontSize: '1.4rem' }}>{item.emoji}</div>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 'var(--text-sm)', color: 'var(--color-text-primary)' }}>{item.title}</div>
+                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: '2px' }}>{item.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div
+              style={{
+                background: 'rgba(6, 182, 212, 0.08)',
+                border: '1px solid rgba(6, 182, 212, 0.2)',
+                borderRadius: 'var(--radius-lg)',
+                padding: 'var(--space-3)',
+                fontSize: 'var(--text-xs)',
+                color: 'var(--color-text-secondary)',
+                marginBottom: 'var(--space-4)',
+                lineHeight: 1.5,
+              }}
+            >
+              ℹ️ <strong>Platform Boundary:</strong> Last Minuties is a connector. We do not handle payments, escrow, or ticket guarantees.
+            </div>
+
+            <button
+              type="button"
+              className="btn btn-primary btn-full"
+              onClick={() => setShowHowItWorksModal(false)}
+            >
+              Got It
+            </button>
+          </div>
+        </div>
+      )}
 
       <div style={{ height: 'var(--space-8)' }} />
     </div>

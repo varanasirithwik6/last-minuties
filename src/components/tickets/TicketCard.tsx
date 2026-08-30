@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Calendar, Clock, Tag, Users, CheckCircle, AlertCircle } from 'lucide-react';
+import { MapPin, Calendar, Clock, Tag, Users, CheckCircle2 } from 'lucide-react';
 import type { Listing } from '../../types';
 import {
   getMinutesUntilShow,
@@ -170,13 +170,13 @@ export default function TicketCard({ listing, showMatchScore, compact }: Props) 
                 </div>
                 <div style={{ display: 'flex', gap: '4px', marginTop: '4px', justifyContent: 'flex-end' }}>
                   {listing.seller.phoneVerified && (
-                    <span title="Phone Verified">
-                      <CheckCircle size={13} style={{ color: 'var(--color-verified)' }} />
+                    <span title="Phone Verified" aria-label="Phone Verified" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                      <CheckCircle2 size={13} style={{ color: 'var(--color-verified)' }} />
                     </span>
                   )}
                   {listing.seller.collegeVerified && (
-                    <span title="College Verified">
-                      <AlertCircle size={13} style={{ color: 'var(--color-success)' }} />
+                    <span title="College Verified" aria-label="College Verified" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                      <CheckCircle2 size={13} style={{ color: 'var(--color-success)' }} />
                     </span>
                   )}
                 </div>

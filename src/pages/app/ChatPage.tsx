@@ -73,6 +73,8 @@ export default function ChatPage() {
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showBlockModal, setShowBlockModal] = useState(false);
+  const [showClearModal, setShowClearModal] = useState(false);
   const [reportTarget, setReportTarget] = useState<{
     type: 'user' | 'message';
     messageId?: string;
@@ -210,22 +212,29 @@ export default function ChatPage() {
     await respondToDealOffer(connectionId, messageId, user.id, false);
   };
 
-  const handleBlockAndExit = async () => {
+  const handleBlockAndExit = () => {
+    setShowOptionsMenu(false);
+    setShowBlockModal(true);
+  };
+
+  const handleConfirmBlock = async () => {
     if (!connectionId || !otherUser?.id || !user?.id) return;
-    if (confirm(`Are you sure you want to block ${otherUser.name || 'this user'}? You will no longer receive requests or messages from them.`)) {
-      await blockUserStore(user.id, otherUser.id);
-      blockUser(connectionId);
-      navigate('/activity');
-    }
+    await blockUserStore(user.id, otherUser.id);
+    blockUser(connectionId);
+    setShowBlockModal(false);
+    navigate('/activity');
   };
 
   const handleClearHistory = () => {
+    setShowOptionsMenu(false);
+    setShowClearModal(true);
+  };
+
+  const handleConfirmClearHistory = () => {
     if (!connectionId) return;
-    if (confirm('Clear all encrypted messages on this device?')) {
-      clearChatHistory(connectionId);
-      setMessages([]);
-      setShowOptionsMenu(false);
-    }
+    clearChatHistory(connectionId);
+    setMessages([]);
+    setShowClearModal(false);
   };
 
   const handleReportUser = () => {
@@ -835,6 +844,100 @@ export default function ChatPage() {
           isOpen={showReportModal}
           onClose={() => setShowReportModal(false)}
         />
+      )}
+
+      {/* ── BLOCK USER MODAL ── */}
+      {showBlockModal && (
+        <div className="modal-backdrop" onClick={() => setShowBlockModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <div style={{ textAlign: 'center', marginBottom: 'var(--space-4)' }}>
+              <div
+                style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: 'var(--radius-full)',
+                  background: 'rgba(239, 68, 68, 0.15)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto var(--space-3)',
+                }}
+              >
+                <Ban size={28} style={{ color: 'var(--color-error)' }} />
+              </div>
+              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-bold)', color: 'var(--color-text-primary)', marginBottom: 'var(--space-2)' }}>
+                Block {otherUser?.name || 'this user'}?
+              </h3>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 'var(--leading-relaxed)' }}>
+                You will no longer receive connection requests or messages from this student. This conversation will be closed.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+              <button
+                type="button"
+                className="btn btn-secondary btn-full"
+                onClick={() => setShowBlockModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                id="confirm-block-btn"
+                type="button"
+                className="btn btn-danger btn-full"
+                onClick={handleConfirmBlock}
+              >
+                Block & Exit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── CLEAR HISTORY MODAL ── */}
+      {showClearModal && (
+        <div className="modal-backdrop" onClick={() => setShowClearModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <div style={{ textAlign: 'center', marginBottom: 'var(--space-4)' }}>
+              <div
+                style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: 'var(--radius-full)',
+                  background: 'rgba(249, 115, 22, 0.15)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto var(--space-3)',
+                }}
+              >
+                <Trash2 size={28} style={{ color: 'var(--color-brand-primary)' }} />
+              </div>
+              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-bold)', color: 'var(--color-text-primary)', marginBottom: 'var(--space-2)' }}>
+                Clear Chat History?
+              </h3>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 'var(--leading-relaxed)' }}>
+                This will erase all locally decrypted messages for this conversation on this device.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+              <button
+                type="button"
+                className="btn btn-secondary btn-full"
+                onClick={() => setShowClearModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                id="confirm-clear-btn"
+                type="button"
+                className="btn btn-primary btn-full"
+                onClick={handleConfirmClearHistory}
+              >
+                Clear History
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

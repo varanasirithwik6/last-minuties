@@ -551,6 +551,59 @@ p {
 }
 
 /* ============================================================
+   Filter Pills & Quick Suggestion Chips
+   ============================================================ */
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.filter-pill:hover {
+  background: var(--color-surface-3);
+  color: var(--color-text-primary);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.filter-pill.active {
+  background: rgba(249, 115, 22, 0.18);
+  border-color: var(--color-brand-primary);
+  color: var(--color-brand-primary);
+  box-shadow: 0 0 14px rgba(249, 115, 22, 0.25);
+}
+
+.chat-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.chat-chip:hover {
+  border-color: var(--color-brand-primary);
+  background: rgba(249, 115, 22, 0.08);
+  color: var(--color-brand-primary);
+}
+
+/* ============================================================
    Ticket Card
    ============================================================ */
 .ticket-card {

@@ -102,7 +102,8 @@ export const useListingsStore = create<ListingsState>((set, get) => ({
         `)
         .in('status', ['AVAILABLE', 'available'])
         .gt('expires_at', nowIso)
-        .order('expires_at', { ascending: true });
+        .order('expires_at', { ascending: true })
+        .limit(50);
 
       if (error) throw error;
 
